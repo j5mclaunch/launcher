@@ -232,6 +232,11 @@ public class MinecraftLauncher {
         if (isOSX()) {
             args.add("-XstartOnFirstThread");
         }
+        args.add("-Xmx256M");
+        args.add("-XX:+UseConcMarkSweepGC ");
+        args.add("-XX:+CMSIncrementalMode");
+        args.add("-XX:-UseAdaptiveSizePolicy");
+        args.add("-Xmn84M");
         args.add("-Djava.library.path="+mcHome+"/bin/natives");
         String classPathStr = mcHome+"/versions/"+v+".jar;"+mcHome+"/bin/*";
         args.add("-cp");
