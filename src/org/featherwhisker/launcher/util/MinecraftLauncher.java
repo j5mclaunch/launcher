@@ -86,7 +86,7 @@ public class MinecraftLauncher {
                 userName = MinecraftAuth.username;
                 plrUuid = MinecraftAuth.uuid;
                 sessionId = MinecraftAuth.minecraft_token;
-                if (plrUuid != "" && userName != "" && sessionId != "") {
+                if (!plrUuid.equals("") && !userName.equals("") && !sessionId.equals("")) {
                     setStatus("Welcome "+userName);
                     MinecraftAuth.saveTokens(mcHome+"/j5mclaunch.json");
                 } else {
@@ -221,7 +221,7 @@ public class MinecraftLauncher {
     }
 
     public void launchGame(String v) {
-        if (plrUuid == "" || userName == "" || sessionId == "") {
+        if (plrUuid.equals("") || userName.equals("") || sessionId.equals("")) {
             error("You need to sign in to play!");
             return;
         }
@@ -232,8 +232,6 @@ public class MinecraftLauncher {
         if (isOSX()) {
             args.add("-XstartOnFirstThread");
         }
-        //args.add("-Dhttp.proxyHost=betacraft.uk");
-        //args.add("-Djava.util.Arrays.useLegacyMergeSort=true");
         args.add("-Djava.library.path="+mcHome+"/bin/natives");
         String classPathStr = mcHome+"/versions/"+v+".jar;"+mcHome+"/bin/*";
         args.add("-cp");
