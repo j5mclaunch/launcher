@@ -4,6 +4,10 @@ import java.awt.event.*;
 import java.awt.*;
 import javax.swing.*;
 
+import org.featherwhisker.launcher.http.CurlHttpClient;
+import org.featherwhisker.launcher.http.HttpClient;
+import org.featherwhisker.launcher.http.JavaHttpClient;
+import org.featherwhisker.launcher.util.Helper;
 import org.featherwhisker.launcher.util.MinecraftLauncher;
 
 public class Main {
