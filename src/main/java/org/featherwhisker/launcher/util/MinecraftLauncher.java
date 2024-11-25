@@ -4,14 +4,27 @@ import org.featherwhisker.launcher.Main;
 import org.featherwhisker.launcher.http.HttpClient;
 import org.json.JSONObject;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JComboBox;
+import javax.swing.JButton;
+import javax.swing.JTextField;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.ArrayList;
 
 import static org.featherwhisker.launcher.Main.setStatus;
 import static org.featherwhisker.launcher.util.Helper.*;
@@ -221,16 +234,21 @@ public class MinecraftLauncher {
             return;
         }
         String mcHome = getMinecraftFolder();
-        Runtime run = Runtime.getRuntime();
         ArrayList<String> args = new ArrayList<String>();
         args.add("java");
+        args.add("-Dsun.java2d.noddraw=true");
+        args.add("-Dsun.java2d.d3d=false");
+        args.add("-Dsun.java2d.opengl=false");
+        args.add("-Dsun.java2d.pmoffscreen=false");
         if (isOSX()) {
-            args.add("-XstartOnFirstThread");
+            //args.add("-XstartOnFirstThread");
             args.add("-Xdock:name=\"Minecraft "+v+"\"");
+            args.add("-Xdock:icon="+getMinecraftFolder()+"/resources/icons/minecraft.icns");
+            args.add("-Dcom.apple.awt.CocoaComponent.CompatibilityMode=false");
         }
         args.add("-Xmx256M");
         if (getJavaVer() <= 11) {
-            args.add("-XX:+UseConcMarkSweepGC ");
+            args.add("-XX:+UseConcMarkSweepGC");
             args.add("-XX:+CMSIncrementalMode");
         }
         args.add("-XX:-UseAdaptiveSizePolicy");
@@ -241,18 +259,16 @@ public class MinecraftLauncher {
         if (isWindows()) args.add(classPathStr);
         else args.add(classPathStr.replace(";",":"));
         args.add("net.minecraft.client.Minecraft");
+
         args.add(userName);
         args.add(sessionId);
-        String args1 = args.get(0);
-        args.remove(0);
-        for (int i = 0; i < args.size(); i++) {
-            args1 += " " + args.get(i);
-        }
-        try {
+       try {
             Main.frame.setEnabled(false);
             Main.frame.setFocusable(false);
-            Main.frame.setVisible(false);
-            Process proc = run.exec(args1);
+            Main.frame.removeAll();
+            Main.frame.dispose();
+            ProcessBuilder proc1 = new ProcessBuilder(args);
+            Process proc = proc1.directory(new File(getMinecraftFolder())).redirectErrorStream(true).start();
             BufferedReader out = new BufferedReader(new
                     InputStreamReader(proc.getInputStream()));
             BufferedReader err = new BufferedReader(new InputStreamReader(
@@ -269,5 +285,6 @@ public class MinecraftLauncher {
             ex.printStackTrace();
             error(ex.getMessage());
         }
+
     }
 }

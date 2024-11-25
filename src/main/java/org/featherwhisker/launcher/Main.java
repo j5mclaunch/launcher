@@ -1,13 +1,16 @@
 package org.featherwhisker.launcher;
 
-import java.awt.event.*;
-import java.awt.*;
-import javax.imageio.ImageIO;
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.UIManager;
+import javax.swing.JComboBox;
+import javax.swing.JButton;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-import org.featherwhisker.launcher.http.CurlHttpClient;
-import org.featherwhisker.launcher.http.HttpClient;
-import org.featherwhisker.launcher.http.JavaHttpClient;
+import javax.imageio.ImageIO;
+
 import org.featherwhisker.launcher.util.Helper;
 import org.featherwhisker.launcher.util.MinecraftLauncher;
 
