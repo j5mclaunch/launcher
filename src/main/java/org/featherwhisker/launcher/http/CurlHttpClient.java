@@ -1,6 +1,7 @@
 package org.featherwhisker.launcher.http;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 
 import static org.featherwhisker.launcher.util.Helper.isOSX;
@@ -38,6 +39,10 @@ public class CurlHttpClient extends HttpClient{
     public void download(String url, String dest) {
         try {
             dest = dest.replace("\\","/").replace("\"","\\\"");
+            File tmp = new File(dest.replaceAll("[^\\\\/]+[\\\\/]?$",""));
+            try {
+                tmp.mkdirs();
+            }catch (Exception ignored){}
             String[] cmd = {curlCommand,"-o",dest,url};
             Process proc = rt.exec(cmd);
             BufferedReader out = new BufferedReader(new
