@@ -86,13 +86,14 @@ public class MinecraftLauncher {
         String mcHome = getMinecraftFolder();
         File info = new File(mcHome+"/j5mclaunch.json");
         if (info.exists()) {
+            setStatus("Logging in...");
             MinecraftAuth.loadTokens(mcHome+"/j5mclaunch.json");
             if (MinecraftAuth.getUsername()) {
                 userName = MinecraftAuth.username;
                 plrUuid = MinecraftAuth.uuid;
                 sessionId = MinecraftAuth.minecraft_token;
                 setStatus("Welcome "+userName);
-                Main.login.setVisible(false);
+                Main.setPlayEnabled();
             } else if (MinecraftAuth.getAccessToken()){
                 MinecraftAuth.getXboxToken();
                 MinecraftAuth.getMinecraftToken();
@@ -103,8 +104,9 @@ public class MinecraftLauncher {
                 if (!plrUuid.equals("") && !userName.equals("") && !sessionId.equals("")) {
                     setStatus("Welcome "+userName);
                     MinecraftAuth.saveTokens(mcHome+"/j5mclaunch.json");
-                    Main.login.setVisible(false);
+                    Main.setPlayEnabled();
                 } else {
+                    setStatus("Please log in to play.");
                     userName = "";
                     plrUuid = "";
                     sessionId = "";
@@ -148,7 +150,7 @@ public class MinecraftLauncher {
                             sessionId = MinecraftAuth.minecraft_token;
                             setStatus("Welcome "+userName);
                             MinecraftAuth.saveTokens(getMinecraftFolder()+"/j5mclaunch.json");
-                            Main.login.setVisible(false);
+                            Main.setPlayEnabled();
                         }
                     }
                 });
@@ -233,6 +235,7 @@ public class MinecraftLauncher {
             error("You need to sign in to play!");
             return;
         }
+        LauncherProfile.saveProfile();
         String mcHome = getMinecraftFolder();
         ArrayList<String> args = new ArrayList<String>();
         args.add("java");
@@ -242,9 +245,13 @@ public class MinecraftLauncher {
         args.add("-Dsun.java2d.pmoffscreen=false");
         if (isOSX()) {
             //args.add("-XstartOnFirstThread");
-            args.add("-Xdock:name=\"Minecraft "+v+"\"");
+            args.add("-Xdock:name=Minecraft "+v);
             args.add("-Xdock:icon="+getMinecraftFolder()+"/resources/icons/minecraft.icns");
             args.add("-Dcom.apple.awt.CocoaComponent.CompatibilityMode=false");
+        }
+        if (LauncherProfile.betacraftProxy) {
+            args.add("-Dhttp.proxyHost=betacraft.uk");
+            args.add("-Djava.util.Arrays.useLegacyMergeSort=true");
         }
         args.add("-Xmx256M");
         if (getJavaVer() <= 11) {

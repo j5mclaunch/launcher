@@ -1,28 +1,28 @@
 package org.featherwhisker.launcher;
 
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.UIManager;
-import javax.swing.JComboBox;
-import javax.swing.JButton;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 
 import javax.imageio.ImageIO;
+import javax.swing.plaf.FontUIResource;
 
 import org.featherwhisker.launcher.util.Helper;
+import org.featherwhisker.launcher.util.LauncherProfile;
 import org.featherwhisker.launcher.util.MinecraftLauncher;
 
 public class Main {
 
     public static JFrame frame;
-    static JButton launch;
+    public static JButton launch;
     static JLabel status;
     public static JButton login;
+    static JCheckBox proxy;
     static JComboBox<String> vs;
 
-    private static MinecraftLauncher mclaunch;
+    public static MinecraftLauncher mclaunch;
     private static String ver = "1.2.5";
     public static void main(String[] args) {
         if (Helper.isOSX()) {
@@ -32,6 +32,14 @@ public class Main {
         }
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            java.util.Enumeration keys = UIManager.getDefaults().keys();
+            FontUIResource f = new javax.swing.plaf.FontUIResource("Sansserif", Font.TRUETYPE_FONT,13);
+            while (keys.hasMoreElements()) {
+                Object key = keys.nextElement();
+                Object value = UIManager.get (key);
+                if (value instanceof javax.swing.plaf.FontUIResource)
+                    UIManager.put (key, f);
+            }
         } catch(Exception e) {
             System.out.println("Failed to set look and feel! :(");
         }
@@ -45,7 +53,7 @@ public class Main {
         System.out.println("-------------------------------\n");
 
         mclaunch = new MinecraftLauncher();
-
+        LauncherProfile.loadProfile();
         frame = new JFrame("j5mclaunch");
 
         frame.setSize(300,75);
@@ -65,7 +73,7 @@ public class Main {
         frame.pack();
 
         status = new JLabel("Please log in to play.");
-        status.setBounds(5,5,180,25);
+        status.setBounds(10,5,180,25);
         status.setVisible(true);
         frame.add(status);
 
@@ -73,7 +81,8 @@ public class Main {
 
         launch = new JButton("Launch");
         launch.setBounds(195,45,100,25);
-        launch.setVisible(true);
+        launch.setVisible(false);
+        launch.setEnabled(false);
         launch.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
@@ -86,7 +95,7 @@ public class Main {
         frame.add(launch);
 
         login = new JButton("Login");
-        login.setBounds(195,15,100,25);
+        login.setBounds(195,45,100,25);
         login.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
@@ -99,16 +108,33 @@ public class Main {
         frame.add(login);
 
         vs = new JComboBox<String>(mclaunch.getClientVersions());
-        vs.setBounds(5,45,100,25);
+        //vs.setBounds(5,45,100,25);
+        vs.setBounds(195,15,100,25);
         vs.setVisible(true);
         vs.setSelectedIndex(3);
+        vs.setSelectedIndex(Arrays.asList(mclaunch.getClientVersions()).indexOf(LauncherProfile.selectedVersion));
         vs.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         ver = vs.getSelectedItem().toString();
+                        LauncherProfile.setVersion(ver);
                     }
                 });
         frame.add(vs);
+
+        proxy = new JCheckBox("Betacraft Proxy");
+        proxy.createToolTip().setTipText("Fixes skins, needed for online mode on b1.7.3");
+        proxy.setSelected(LauncherProfile.betacraftProxy);
+        proxy.addActionListener(
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        LauncherProfile.setProxyEnabled(proxy.isSelected());
+                    }
+                });
+        proxy.setBounds(5,45,125,25);
+        proxy.setVisible(true);
+        frame.add(proxy);
+
         frame.setVisible(true);
         mclaunch.refreshAuth();
     }
@@ -117,6 +143,16 @@ public class Main {
         status.repaint();
         status.revalidate();
         status.paintImmediately(status.getVisibleRect());
+        frame.repaint();
+    }
+    public static void setPlayEnabled() {
+        login.setVisible(false);
+        login.setEnabled(false);
+        launch.setVisible(true);
+        launch.setEnabled(true);
+        launch.revalidate();
+        launch.repaint();
+        launch.paintImmediately(launch.getVisibleRect());
         frame.repaint();
     }
 }
