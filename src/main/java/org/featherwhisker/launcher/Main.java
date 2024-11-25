@@ -2,6 +2,7 @@ package org.featherwhisker.launcher;
 
 import java.awt.event.*;
 import java.awt.*;
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 import org.featherwhisker.launcher.http.CurlHttpClient;
@@ -12,20 +13,47 @@ import org.featherwhisker.launcher.util.MinecraftLauncher;
 
 public class Main {
 
-    static JFrame frame;
+    public static JFrame frame;
     static JButton launch;
     static JLabel status;
-    static JButton login;
+    public static JButton login;
     static JComboBox<String> vs;
 
-    private static MinecraftLauncher mclaunch = new MinecraftLauncher();
+    private static MinecraftLauncher mclaunch;
     private static String ver = "1.2.5";
     public static void main(String[] args) {
+        if (Helper.isOSX()) {
+            System.setProperty("apple.laf.useScreenMenuBar", "true");
+            System.setProperty("apple.awt.application.name", "j5mclaunch");
+            System.setProperty("com.apple.mrj.application.apple.menu.about.name", "j5mclaunch");
+        }
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch(Exception e) {
+            System.out.println("Failed to set look and feel! :(");
+        }
+        System.out.println("-------System information------");
+        System.out.println("java.vendor: "+System.getProperty("java.vendor"));
+        System.out.println("java.version: "+System.getProperty("java.version"));
+        System.out.println("java TLSv1.3: "+Helper.javaClientSupported());
+        System.out.println("os.name: "+System.getProperty("os.name"));
+        System.out.println("os.version: "+System.getProperty("os.version"));
+        System.out.println("os.arch: "+System.getProperty("os.arch"));
+        System.out.println("-------------------------------\n");
+
+        mclaunch = new MinecraftLauncher();
+
         frame = new JFrame("j5mclaunch");
 
         frame.setSize(300,75);
         frame.setName("j5mclaunch");
         frame.setTitle("Minecraft Launcher");
+        try {
+            frame.setIconImage(ImageIO.read(Main.class.getResource("/icon.png")));
+        }catch(Exception ex) {
+            System.out.println("Failed to set window icon! :(");
+            System.out.println(ex);
+        }
         frame.setResizable(false);
         frame.setLayout(null);
         frame.setLocationRelativeTo(null);

@@ -1,5 +1,7 @@
 package org.featherwhisker.launcher.http;
 
+import org.featherwhisker.launcher.util.Helper;
+
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -10,6 +12,13 @@ import java.nio.channels.ReadableByteChannel;
 import static org.featherwhisker.launcher.util.Helper.error;
 
 public class JavaHttpClient extends HttpClient {
+    public JavaHttpClient() {
+        if (!Helper.javaClientSupported()) {
+            error("Unable to fallback to Java HTTP client!");
+            System.exit(1);
+        }
+    }
+
     // Most of this is StackOverflow stuff thrown together
     // https://creativecommons.org/licenses/by-sa/4.0/
 

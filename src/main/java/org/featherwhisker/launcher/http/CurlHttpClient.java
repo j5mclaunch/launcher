@@ -3,11 +3,20 @@ package org.featherwhisker.launcher.http;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
+import static org.featherwhisker.launcher.util.Helper.isOSX;
+
 public class CurlHttpClient extends HttpClient{
+    private String curlCommand = "curl";
+    public CurlHttpClient() {}
+    public CurlHttpClient(String cmd) {
+        curlCommand = cmd;
+    }
+
     private Runtime rt = Runtime.getRuntime();
     public String get(String str, String authHeader) {
         try {
-            Process proc = rt.exec("curl --header \"Authorization: Bearer "+authHeader+"\" "+str);
+            String[] cmd = {curlCommand,"-H","Authorization: Bearer "+authHeader,str};
+            Process proc = rt.exec(cmd);
             BufferedReader out = new BufferedReader(new
                     InputStreamReader(proc.getInputStream()));
             BufferedReader err = new BufferedReader(new InputStreamReader(
@@ -17,7 +26,7 @@ public class CurlHttpClient extends HttpClient{
             while ((s1 = out.readLine()) != null) {
                 s += s1 + "\n";
             }
-            while ((s1 = out.readLine()) != null) {
+            while ((s1 = err.readLine()) != null) {
                 System.out.println(s1);
             }
             return s;
@@ -29,7 +38,8 @@ public class CurlHttpClient extends HttpClient{
     public void download(String url, String dest) {
         try {
             dest = dest.replace("\\","/").replace("\"","\\\"");
-            Process proc = rt.exec("curl -o \""+dest+"\" "+url);
+            String[] cmd = {curlCommand,"-o",dest,url};
+            Process proc = rt.exec(cmd);
             BufferedReader out = new BufferedReader(new
                     InputStreamReader(proc.getInputStream()));
             BufferedReader err = new BufferedReader(new InputStreamReader(
@@ -39,7 +49,7 @@ public class CurlHttpClient extends HttpClient{
             while ((s1 = out.readLine()) != null) {
                 s += s1 + "\n";
             }
-            while ((s1 = out.readLine()) != null) {
+            while ((s1 = err.readLine()) != null) {
                 System.out.println(s1);
             }
         } catch(Exception ignored) {
@@ -49,7 +59,14 @@ public class CurlHttpClient extends HttpClient{
 
     public String post(String url1, String json1) {
         try {
-            Process proc = rt.exec("curl -d \""+json1.replace("\"","\\\"")+"\" -X POST -H \"Content-Type: application/json\" -H \"Accept: application/json\" "+url1);
+            String[] cmd = {
+                    curlCommand,"-d",json1,
+                    "-X","POST",
+                    "-H","Content-Type: application/json",
+                    "-H","Accept: application/json",
+                    url1
+            };
+            Process proc = rt.exec(cmd);
             BufferedReader out = new BufferedReader(new
                     InputStreamReader(proc.getInputStream()));
             BufferedReader err = new BufferedReader(new InputStreamReader(

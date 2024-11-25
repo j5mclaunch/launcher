@@ -1,5 +1,6 @@
 package org.featherwhisker.launcher.util;
 
+import org.featherwhisker.launcher.Main;
 import org.featherwhisker.launcher.http.HttpClient;
 import org.json.JSONObject;
 
@@ -7,7 +8,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.util.*;
 
 import static org.featherwhisker.launcher.Main.setStatus;
@@ -45,9 +48,6 @@ public class MinecraftLauncher {
         natives.put("linux","natives/linux_natives.zip");
         natives.put("macosx","natives/macosx_natives.zip");
         natives.put("solaris","natives/solaris_natives.zip");
-
-        //System.out.println(http.post("https://httpbin.org/post","AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-        //System.out.println(http.get("https://httpbin.org/get","AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
     }
     public void downloadAssets() {
         String assetBase = getMinecraftFolder()+"/resources/";
@@ -79,6 +79,7 @@ public class MinecraftLauncher {
                 plrUuid = MinecraftAuth.uuid;
                 sessionId = MinecraftAuth.minecraft_token;
                 setStatus("Welcome "+userName);
+                Main.login.setVisible(false);
             } else if (MinecraftAuth.getAccessToken()){
                 MinecraftAuth.getXboxToken();
                 MinecraftAuth.getMinecraftToken();
@@ -89,6 +90,7 @@ public class MinecraftLauncher {
                 if (!plrUuid.equals("") && !userName.equals("") && !sessionId.equals("")) {
                     setStatus("Welcome "+userName);
                     MinecraftAuth.saveTokens(mcHome+"/j5mclaunch.json");
+                    Main.login.setVisible(false);
                 } else {
                     userName = "";
                     plrUuid = "";
@@ -133,6 +135,7 @@ public class MinecraftLauncher {
                             sessionId = MinecraftAuth.minecraft_token;
                             setStatus("Welcome "+userName);
                             MinecraftAuth.saveTokens(getMinecraftFolder()+"/j5mclaunch.json");
+                            Main.login.setVisible(false);
                         }
                     }
                 });
@@ -152,14 +155,6 @@ public class MinecraftLauncher {
         } else {
             return System.getProperty("user.home")+"/.minecraft";
         }
-    }
-    public boolean isOSX() {
-        String OS = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
-        return (OS.contains("mac")) || (OS.contains("darwin"));
-    }
-    public boolean isWindows() {
-        String OS = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
-        return OS.contains("win");
     }
     public void downloadVersion(String s) {
         String mcHome = getMinecraftFolder();
@@ -231,14 +226,17 @@ public class MinecraftLauncher {
         args.add("java");
         if (isOSX()) {
             args.add("-XstartOnFirstThread");
+            args.add("-Xdock:name=\"Minecraft "+v+"\"");
         }
         args.add("-Xmx256M");
-        args.add("-XX:+UseConcMarkSweepGC ");
-        args.add("-XX:+CMSIncrementalMode");
+        if (getJavaVer() <= 11) {
+            args.add("-XX:+UseConcMarkSweepGC ");
+            args.add("-XX:+CMSIncrementalMode");
+        }
         args.add("-XX:-UseAdaptiveSizePolicy");
         args.add("-Xmn84M");
         args.add("-Djava.library.path="+mcHome+"/bin/natives");
-        String classPathStr = mcHome+"/versions/"+v+".jar;"+mcHome+"/bin/*";
+        String classPathStr = mcHome+"/versions/"+v+".jar;"+mcHome+"/bin/lwjgl.jar;"+mcHome+"/bin/lwjgl_util.jar;"+mcHome+"/bin/jinput.jar;";
         args.add("-cp");
         if (isWindows()) args.add(classPathStr);
         else args.add(classPathStr.replace(";",":"));
@@ -251,7 +249,21 @@ public class MinecraftLauncher {
             args1 += " " + args.get(i);
         }
         try {
-            run.exec(args1);
+            Main.frame.setEnabled(false);
+            Main.frame.setFocusable(false);
+            Main.frame.setVisible(false);
+            Process proc = run.exec(args1);
+            BufferedReader out = new BufferedReader(new
+                    InputStreamReader(proc.getInputStream()));
+            BufferedReader err = new BufferedReader(new InputStreamReader(
+                    proc.getErrorStream()));
+            String s1;
+            while ((s1 = out.readLine()) != null) {
+                System.out.println(s1);
+            }
+            while ((s1 = err.readLine()) != null) {
+                System.out.println(s1);
+            }
             System.exit(0);
         } catch(Exception ex) {
             ex.printStackTrace();
