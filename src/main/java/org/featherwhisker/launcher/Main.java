@@ -113,6 +113,7 @@ public class Main {
         vs.setVisible(true);
         vs.setSelectedIndex(3);
         vs.setSelectedIndex(Arrays.asList(mclaunch.getClientVersions()).indexOf(LauncherProfile.selectedVersion));
+        ver = LauncherProfile.selectedVersion;
         vs.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
