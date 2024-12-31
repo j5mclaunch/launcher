@@ -65,10 +65,12 @@ public class CurlHttpClient extends HttpClient{
     public String post(String url1, String json1) {
         try {
             String[] cmd = {
-                    curlCommand,"-d",json1,
+                    curlCommand, "-L",
+                    "-d",json1,
                     "-X","POST",
                     "-H","Content-Type: application/json",
                     "-H","Accept: application/json",
+                    "-H","x-xbl-contract-version: 1",
                     url1
             };
             Process proc = rt.exec(cmd);
