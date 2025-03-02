@@ -147,7 +147,7 @@ public class Helper {
     }
     public static boolean isOnline() {
         try {
-            URLConnection a = new URL("https://example.com").openConnection();
+            URLConnection a = new URL("http://httpbin.org/get").openConnection();
             a.getContent().toString();
             return true;
         } catch (Exception ex) {
