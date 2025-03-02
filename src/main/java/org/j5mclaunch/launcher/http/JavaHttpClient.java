@@ -1,6 +1,6 @@
-package org.featherwhisker.launcher.http;
+package org.j5mclaunch.launcher.http;
 
-import org.featherwhisker.launcher.util.Helper;
+import org.j5mclaunch.launcher.util.Helper;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -9,7 +9,7 @@ import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
-import static org.featherwhisker.launcher.util.Helper.error;
+import static org.j5mclaunch.launcher.util.Helper.error;
 
 public class JavaHttpClient extends HttpClient {
     public JavaHttpClient() {
@@ -43,8 +43,7 @@ public class JavaHttpClient extends HttpClient {
             return body;
         } catch(Exception ex) {
             System.out.println(ex);
-            error(ex.getMessage());
-            return "";
+            throw new RuntimeException(ex);
         }
     }
 
@@ -64,7 +63,7 @@ public class JavaHttpClient extends HttpClient {
             rbc.close();
         } catch(Exception ex) {
             System.out.println(ex);
-            error(ex.getMessage());
+            throw new RuntimeException(ex);
         }
     }
 
@@ -97,12 +96,11 @@ public class JavaHttpClient extends HttpClient {
                 error(ex.getMessage());
                 System.out.println(http.getResponseMessage());
                 System.out.println(ex.getCause());
-                return "{}";
+                throw new RuntimeException(ex);
             }
         } catch (Exception ex) {
             System.out.println(ex);
-            error(ex.getMessage());
-            return "{}";
+            throw new RuntimeException(ex);
         }
     }
 }

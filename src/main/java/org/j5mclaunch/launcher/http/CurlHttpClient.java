@@ -1,10 +1,8 @@
-package org.featherwhisker.launcher.http;
+package org.j5mclaunch.launcher.http;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-
-import static org.featherwhisker.launcher.util.Helper.isOSX;
 
 public class CurlHttpClient extends HttpClient{
     private String curlCommand = "curl";

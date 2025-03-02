@@ -1,45 +1,34 @@
-package org.featherwhisker.launcher.util;
+package org.j5mclaunch.launcher.util;
 
-import org.featherwhisker.launcher.Main;
-import org.featherwhisker.launcher.http.HttpClient;
+import com.centerkey.utils.BareBonesBrowserLaunch;
+import org.j5mclaunch.launcher.Main;
+import org.j5mclaunch.launcher.http.HttpClient;
 import org.json.JSONObject;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JComboBox;
 import javax.swing.JButton;
 import javax.swing.JTextField;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.Map;
-import java.util.ArrayList;
+import java.util.*;
 
-import static org.featherwhisker.launcher.Main.setStatus;
-import static org.featherwhisker.launcher.util.Helper.*;
+import static org.j5mclaunch.launcher.Main.*;
+import static org.j5mclaunch.launcher.util.Helper.*;
 
 public class MinecraftLauncher {
+    public JSONObject urls = new JSONObject(Helper.readFromClasspath("/downloadUrls.json"));
     // misc URLs
-    public static final String librariesBase = "https://raw.githubusercontent.com/j5mclaunch/lwjgl/refs/heads/main/";
+    public final String librariesBase = urls.getString("nativesUrl");
 
     //  client stuff
-    private final Map<String,String> clientUrls = new HashMap<String, String>();
-    private String[] libraries = {
-            "jinput.jar",
-            "lwjgl.jar",
-            "lwjgl_util.jar"
-    };
+    private final Map<String,String> clientUrls = new LinkedHashMap<String, String>();
+    private String[] libraries = Helper.jsonArrayToStringArray(urls.getJSONArray("libraries"));
+
     private final Map<String,String> natives = new HashMap<String, String>();
 
     private static HttpClient http = Helper.getHttpClient();
@@ -48,19 +37,15 @@ public class MinecraftLauncher {
     public String plrUuid = "";
     public String userName = "";
     public MinecraftLauncher() {
-        clientUrls.put("1.5.2","https://launcher.mojang.com/v1/objects/465378c9dc2f779ae1d6e8046ebc46fb53a57968/client.jar");
-        clientUrls.put("1.4.7","https://launcher.mojang.com/v1/objects/53ed4b9d5c358ecfff2d8b846b4427b888287028/client.jar");
-        clientUrls.put("1.3.2","https://launcher.mojang.com/v1/objects/c2efd57c7001ddf505ca534e54abf3d006e48309/client.jar");
-        clientUrls.put("1.2.5","https://launcher.mojang.com/v1/objects/4a2fac7504182a97dcbcd7560c6392d7c8139928/client.jar");
-        clientUrls.put("1.1","https://launcher.mojang.com/v1/objects/f690d4136b0026d452163538495b9b0e8513d718/client.jar");
-        clientUrls.put("1.0.0","https://launcher.mojang.com/v1/objects/b679fea27f2284836202e9365e13a82552092e5d/client.jar");
-        clientUrls.put("b1.8.1","https://launcher.mojang.com/v1/objects/6b562463ccc2c7ff12ff350a2b04a67b3adcd37b/client.jar");
-        clientUrls.put("b1.7.3","https://launcher.mojang.com/v1/objects/43db9b498cb67058d2e12d394e6507722e71bb45/client.jar");
+        for (Iterator<String> it = urls.getJSONObject("clients").keys(); it.hasNext(); ) {
+            String key = it.next();
+            clientUrls.put(key,urls.getJSONObject("clients").getString(key));
+        }
 
-        natives.put("windows","natives/windows_natives.zip");
-        natives.put("linux","natives/linux_natives.zip");
-        natives.put("macosx","natives/macosx_natives.zip");
-        natives.put("solaris","natives/solaris_natives.zip");
+        for (Iterator<String> it = urls.getJSONObject("natives").keys(); it.hasNext(); ) {
+            String key = it.next();
+            natives.put(key,urls.getJSONObject("natives").getString(key));
+        }
     }
     public void downloadAssets() {
         String assetBase = getMinecraftFolder()+"/resources/";
@@ -68,15 +53,15 @@ public class MinecraftLauncher {
         if (!a.exists()) {
             printf("Downloading resources");
             a.mkdirs();
-            String tmp = http.get("https://launchermeta.mojang.com/v1/packages/3d8e55480977e32acd9844e545177e69a52f594b/pre-1.6.json","");
+            String tmp = http.get(urls.getString("assetUrl"),"");
+            String tmp1 = urls.getString("assetBase");
             JSONObject assets = new JSONObject(tmp).getJSONObject("objects");
             Iterator<String> keys = assets.keys();
             while (keys.hasNext()) {
-                //https://resources.download.minecraft.net/
                 String key = keys.next();
                 printf("Downloading "+key);
                 String hash = assets.getJSONObject(key).getString("hash");
-                String url = "https://resources.download.minecraft.net/"+hash.substring(0,2)+"/"+hash;
+                String url = tmp1+hash.substring(0,2)+"/"+hash;
                 http.download(url,assetBase+key);
             }
         }
@@ -85,32 +70,58 @@ public class MinecraftLauncher {
     public void refreshAuth() {
         String mcHome = getMinecraftFolder();
         File info = new File(mcHome+"/j5mclaunch.json");
+        boolean online = Helper.isOnline();
         if (info.exists()) {
             setStatus("Logging in...");
             MinecraftAuth.loadTokens(mcHome+"/j5mclaunch.json");
-            if (MinecraftAuth.getUsername()) {
+            if (!online && MinecraftAuth.username.length() != 0) {
                 userName = MinecraftAuth.username;
-                plrUuid = MinecraftAuth.uuid;
-                sessionId = MinecraftAuth.minecraft_token;
-                setStatus("Welcome "+userName);
-                Main.setPlayEnabled();
-            } else if (MinecraftAuth.getAccessToken()){
-                MinecraftAuth.getXboxToken();
-                MinecraftAuth.getMinecraftToken();
-                MinecraftAuth.getUsername();
-                userName = MinecraftAuth.username;
-                plrUuid = MinecraftAuth.uuid;
-                sessionId = MinecraftAuth.minecraft_token;
-                if (!plrUuid.equals("") && !userName.equals("") && !sessionId.equals("")) {
-                    setStatus("Welcome "+userName);
-                    MinecraftAuth.saveTokens(mcHome+"/j5mclaunch.json");
-                    Main.setPlayEnabled();
-                } else {
-                    setStatus("Please log in to play.");
-                    userName = "";
-                    plrUuid = "";
-                    sessionId = "";
+                plrUuid = "NO INTERNET";
+                sessionId = "NO INTERNET";
+                setStatus("Welcome "+userName+" *OFFLINE*");
+                setPlayEnabled();
+            } else if (!online) {
+                error("You need to be online to sign in and download the game!");
+                System.exit(1);
+            } else {
+                try {
+                    if (MinecraftAuth.getUsername()) {
+                        userName = MinecraftAuth.username;
+                        plrUuid = MinecraftAuth.uuid;
+                        sessionId = MinecraftAuth.minecraft_token;
+                        setStatus("Welcome "+userName);
+                        Main.setPlayEnabled();
+                    } else if (MinecraftAuth.getAccessToken()){
+                        MinecraftAuth.getXboxToken();
+                        MinecraftAuth.getMinecraftToken();
+                        MinecraftAuth.getUsername();
+                        userName = MinecraftAuth.username;
+                        plrUuid = MinecraftAuth.uuid;
+                        sessionId = MinecraftAuth.minecraft_token;
+                        if (plrUuid.length() != 0 && userName.length() != 0 && sessionId.length() != 0) {
+                            setStatus("Welcome "+userName);
+                            MinecraftAuth.saveTokens(mcHome+"/j5mclaunch.json");
+                            setPlayEnabled();
+                        } else {
+                            setStatus("Please log in to play.");
+                            userName = "";
+                            plrUuid = "";
+                            sessionId = "";
+                            setPlayDisabled();
+                        }
+                    } else {
+                        setPlayDisabled();
+                    }
+                } catch(Exception ex) {
+                    setStatus("Login expired.");
+                    setPlayDisabled();
                 }
+            }
+        } else {
+            setPlayDisabled();
+            if (!online) {
+                error("You need to be online to sign in and download the game!");
+                System.exit(1);
             }
         }
     }
@@ -134,7 +145,7 @@ public class MinecraftLauncher {
         t1.setBounds(0,50,650,25);
         f.add(t1);
         JButton done = new JButton("Done");
-        done.setBounds((650/2) - 100,75,100,25);
+        done.setBounds((650/2),75,100,25);
         done.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
@@ -151,15 +162,34 @@ public class MinecraftLauncher {
                             setStatus("Welcome "+userName);
                             MinecraftAuth.saveTokens(getMinecraftFolder()+"/j5mclaunch.json");
                             Main.setPlayEnabled();
+                        } else {
+                            login.setVisible(true);
+                            login.setEnabled(true);
                         }
                     }
                 });
         f.add(done);
+        JButton copy = new JButton("Open URL");
+        copy.setBounds((650/2) - 100,75,100,25);
+        copy.addActionListener(
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        BareBonesBrowserLaunch.openURL(MinecraftAuth.manualUrl);
+                    }
+                });
+        f.add(copy);
         f.setVisible(true);
 
     }
+    private String[] versions;
     public String[] getClientVersions() {
-        return new String[]{"1.5.2", "1.4.7","1.3.2","1.2.5","1.1","1.0.0","b1.8.1","b1.7.3"};
+        if (versions == null) {
+            versions = new String[clientUrls.keySet().size()];
+            for (int i=0; i < versions.length; i++) {
+                versions[i] = (String) clientUrls.keySet().toArray()[i];
+            }
+        }
+        return versions;
     }
     public String getMinecraftFolder() {
         String OS = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
@@ -176,7 +206,6 @@ public class MinecraftLauncher {
         File a = new File(mcHome+"/versions/"+s+".jar");
         if (!a.exists()) {
             printf("Downloading version " + s);
-            //popup("Downloading version " + s);
             http.download(clientUrls.get(s),mcHome+"/versions/"+s+".jar");
         } else {
             printf("Version "+s+" already downloaded, skipping");
@@ -244,7 +273,6 @@ public class MinecraftLauncher {
         args.add("-Dsun.java2d.opengl=false");
         args.add("-Dsun.java2d.pmoffscreen=false");
         if (isOSX()) {
-            //args.add("-XstartOnFirstThread");
             args.add("-Xdock:name=Minecraft "+v);
             args.add("-Xdock:icon="+getMinecraftFolder()+"/resources/icons/minecraft.icns");
             args.add("-Dcom.apple.awt.CocoaComponent.CompatibilityMode=false");
@@ -253,7 +281,14 @@ public class MinecraftLauncher {
             args.add("-Dhttp.proxyHost=betacraft.uk");
             args.add("-Djava.util.Arrays.useLegacyMergeSort=true");
         }
-        args.add("-Xmx256M");
+        int ramToUse = (Helper.getRamAmount()/2);
+        ramToUse = ramToUse - (ramToUse%128) + 128;
+        if (ramToUse > 4096) {
+            ramToUse = 4096;
+        } else if (ramToUse < 256) {
+            ramToUse = 256;
+        }
+        args.add("-Xmx"+ramToUse+"M");
         if (getJavaVer() <= 11) {
             args.add("-XX:+UseConcMarkSweepGC");
             args.add("-XX:+CMSIncrementalMode");
@@ -282,7 +317,7 @@ public class MinecraftLauncher {
                     proc.getErrorStream()));
             String s1;
             while ((s1 = out.readLine()) != null) {
-                System.out.println(s1);
+                System.out.println(s1.replace(sessionId,"<SESSION ID>"));
             }
             while ((s1 = err.readLine()) != null) {
                 System.out.println(s1);

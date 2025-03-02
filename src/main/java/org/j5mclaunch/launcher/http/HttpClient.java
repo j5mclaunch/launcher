@@ -1,4 +1,4 @@
-package org.featherwhisker.launcher.http;
+package org.j5mclaunch.launcher.http;
 
 public abstract class HttpClient {
     public abstract String get(String str,String authHeader);

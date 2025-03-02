@@ -1,18 +1,22 @@
-package org.featherwhisker.launcher.util;
+package org.j5mclaunch.launcher.util;
 
-import org.featherwhisker.launcher.http.CurlHttpClient;
-import org.featherwhisker.launcher.http.HttpClient;
-import org.featherwhisker.launcher.http.JavaHttpClient;
+import org.j5mclaunch.launcher.http.CurlHttpClient;
+import org.j5mclaunch.launcher.http.HttpClient;
+import org.j5mclaunch.launcher.http.JavaHttpClient;
+import org.json.JSONArray;
 
 import javax.net.ssl.SSLContext;
 import javax.swing.*;
 import java.io.*;
+import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Locale;
+import java.util.Scanner;
 import java.util.zip.*;
 
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
-import static org.featherwhisker.launcher.Main.setStatus;
+import static org.j5mclaunch.launcher.Main.setStatus;
 
 public class Helper {
     public static void makeDir(String dir) {
@@ -115,8 +119,12 @@ public class Helper {
                                 error("cURL on OS X is as old as the version is. You need to install a new version with port or brew to play the game.");
                                 System.exit(1);
                             }
+                        }else if (s.contains("(Windows)") || s.contains("WinIDN")) {
+                            popup("Microsoft's distribution of cURL does not work with this software. Falling back onto Java http...");
+                            http = new JavaHttpClient();
+                        } else {
+                            http = new CurlHttpClient();
                         }
-                        http = new CurlHttpClient();
                     } else {
                         if (getJavaVer() < 11) {
                             popup("cURL was not found on your system! This is needed for TLS v1.3 on old systems.");
@@ -132,5 +140,34 @@ public class Helper {
             }
         }
         return http;
+    }
+    public static int getRamAmount() { //https://coderanch.com/t/327792/java/RAM-size-Java
+        long memorySize = ((com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean()).getTotalPhysicalMemorySize();
+        return Math.round((float) memorySize / (1024 * 1024));
+    }
+    public static boolean isOnline() {
+        try {
+            URLConnection a = new URL("https://example.com").openConnection();
+            a.getContent().toString();
+            return true;
+        } catch (Exception ex) {
+            System.out.println(ex);
+            return false;
+        }
+    }
+    public static String readFromClasspath(String path) {
+        Scanner a = new Scanner(Helper.class.getResourceAsStream(path));
+        String newStr = "";
+        while (a.hasNext()) {
+            newStr += a.next();
+        }
+        return newStr;
+    }
+    public static String[] jsonArrayToStringArray(JSONArray arr1) {
+        String[] arr = new String[arr1.length()];
+        for (int i=0; i < arr.length; i++) {
+            arr[i] = arr1.getString(i);
+        }
+        return arr;
     }
 }

@@ -1,4 +1,4 @@
-package org.featherwhisker.launcher;
+package org.j5mclaunch.launcher;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,9 +9,10 @@ import java.util.Arrays;
 import javax.imageio.ImageIO;
 import javax.swing.plaf.FontUIResource;
 
-import org.featherwhisker.launcher.util.Helper;
-import org.featherwhisker.launcher.util.LauncherProfile;
-import org.featherwhisker.launcher.util.MinecraftLauncher;
+import org.j5mclaunch.launcher.util.Helper;
+import org.j5mclaunch.launcher.util.LauncherProfile;
+import org.j5mclaunch.launcher.util.MinecraftLauncher;
+import org.json.JSONObject;
 
 public class Main {
 
@@ -21,7 +22,6 @@ public class Main {
     public static JButton login;
     static JCheckBox proxy;
     static JComboBox<String> vs;
-
     public static MinecraftLauncher mclaunch;
     private static String ver = "1.2.5";
     public static void main(String[] args) {
@@ -50,6 +50,7 @@ public class Main {
         System.out.println("os.name: "+System.getProperty("os.name"));
         System.out.println("os.version: "+System.getProperty("os.version"));
         System.out.println("os.arch: "+System.getProperty("os.arch"));
+        System.out.println("system ram: "+Helper.getRamAmount()+" Mb");
         System.out.println("-------------------------------\n");
 
         mclaunch = new MinecraftLauncher();
@@ -104,7 +105,8 @@ public class Main {
                         }
                     }
                 });
-        login.setVisible(true);
+        login.setVisible(false);
+        login.setEnabled(false);
         frame.add(login);
 
         vs = new JComboBox<String>(mclaunch.getClientVersions());
@@ -151,6 +153,16 @@ public class Main {
         login.setEnabled(false);
         launch.setVisible(true);
         launch.setEnabled(true);
+        launch.revalidate();
+        launch.repaint();
+        launch.paintImmediately(launch.getVisibleRect());
+        frame.repaint();
+    }
+    public static void setPlayDisabled() {
+        login.setVisible(true);
+        login.setEnabled(true);
+        launch.setVisible(false);
+        launch.setEnabled(false);
         launch.revalidate();
         launch.repaint();
         launch.paintImmediately(launch.getVisibleRect());

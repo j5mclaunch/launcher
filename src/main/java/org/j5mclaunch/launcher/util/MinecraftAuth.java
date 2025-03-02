@@ -1,10 +1,9 @@
-package org.featherwhisker.launcher.util;
-import org.featherwhisker.launcher.http.HttpClient;
+package org.j5mclaunch.launcher.util;
+import org.j5mclaunch.launcher.http.HttpClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.Scanner;
 
@@ -104,6 +103,7 @@ public class MinecraftAuth {
             JSONObject json = new JSONObject();
             json.put("minecraft",minecraft_token);
             json.put("refresh",microsoft_refresh_token);
+            json.put("username",username);
             file.write(json.toString());
             file.close();
         } catch(Exception ex) {
@@ -124,6 +124,9 @@ public class MinecraftAuth {
             if (b.has("minecraft") && b.has("refresh")) {
                 minecraft_token = b.getString("minecraft");
                 microsoft_refresh_token = b.getString("refresh");
+            }
+            if (b.has("username")) {
+                username = b.getString("username");
             }
         } catch(Exception ex) {
             System.out.println(ex);

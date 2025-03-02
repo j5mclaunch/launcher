@@ -1,6 +1,6 @@
-package org.featherwhisker.launcher.util;
+package org.j5mclaunch.launcher.util;
 
-import org.featherwhisker.launcher.Main;
+import org.j5mclaunch.launcher.Main;
 import org.json.JSONObject;
 
 import java.io.File;
