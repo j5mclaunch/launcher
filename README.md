@@ -12,7 +12,7 @@ Fallback doesn't work with old versions of Java so its important new cURL is pre
 2. Transfer the JAR onto a USB thumbdrive
 3. On your PowerPC mac or Windows 2000 desktop open j5mclaunch
 4. Press login and open the URL in a browser (if it doesnt work in TFF: `https://login.live.com/oauth20_authorize.srf?client_id=00000000402B5328&redirect_uri=https://login.live.com/oauth20_desktop.srf&response_type=code&scope=service::user.auth.xboxlive.com::MBI_SSL`)
-5. Paste the URL of the blank page into the text box
+5. Paste the URL of the blank page (WITHOUT A TITLE, if it has a title then the login is broken in your browser) into the text box
 6. Press "Play" and wait for everything to download
 
 ## Notice
