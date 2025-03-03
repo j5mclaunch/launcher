@@ -18,3 +18,12 @@ Fallback doesn't work with old versions of Java so its important new cURL is pre
 ## Notice
 
 This does NOT install modifications like OptiFine by default. It is only the launcher. You need to go to the versions folder and mod your own jars.
+
+
+## About Java 6
+
+It "works" I guess, I got 1.2.5 to run a singleplayer world at 2 frames per second (worse performance than with java 5) on my 1.3ghz iBook G4 14"
+
+You can intall it here: https://forums.macrumors.com/threads/how-to-install-java-6-and-7-on-ppc-os-x.2190159/ but I suggest only doing it if you need a modification that \*requires\* Java 6 (I haven't tested Forge, all I know is that those older versions need help download libraries or they crash)
+
+Be aware that on Tiger it doesn't set Java in path successfully, but this launcher will use the symlinks the Java Updater makes so you can use the scripts to change version on MC
