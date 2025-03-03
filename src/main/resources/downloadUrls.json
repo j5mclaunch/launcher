@@ -1,18 +1,20 @@
 {
+  "betacraft": "betacraft.uk",
   "assetUrl": "https://launchermeta.mojang.com/v1/packages/770572e819335b6c0a053f8378ad88eda189fc14/legacy.json",
   "assetBase": "https://resources.download.minecraft.net/",
-  "nativesUrl": "https://raw.githubusercontent.com/j5mclaunch/lwjgl/refs/heads/main/",
+  "lwjglUrl": "https://raw.githubusercontent.com/j5mclaunch/lwjgl/refs/heads/main/",
   "natives": {
     "windows": "natives/windows_natives.zip",
     "linux": "natives/linux_natives.zip",
     "macosx": "natives/macosx_natives.zip",
     "solaris": "natives/solaris_natives.zip"
   },
-  "libraries": [
+  "lwjgl": [
     "jinput.jar",
     "lwjgl.jar",
     "lwjgl_util.jar"
   ],
+  "j6libraries": {},
   "clients": {
     "1.5.2": "https://launcher.mojang.com/v1/objects/465378c9dc2f779ae1d6e8046ebc46fb53a57968/client.jar",
     "1.4.7": "https://launcher.mojang.com/v1/objects/53ed4b9d5c358ecfff2d8b846b4427b888287028/client.jar",
@@ -32,5 +34,6 @@
     "a1.2.6": "https://launcher.mojang.com/v1/objects/a68c817afd6c05c253ba5462287c2c19bbb57935/client.jar",
     "a1.1.2_01": "https://launcher.mojang.com/v1/objects/daa4b9f192d2c260837d3b98c39432324da28e86/client.jar",
     "a1.0.17_04": "https://launcher.mojang.com/v1/objects/61cb4c717981f34bf90e8502d2eb8cf2aa6db0cd/client.jar"
-  }
+  },
+  "j6clients": {}
 }

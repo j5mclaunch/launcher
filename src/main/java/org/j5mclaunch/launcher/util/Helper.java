@@ -4,6 +4,7 @@ import org.j5mclaunch.launcher.http.CurlHttpClient;
 import org.j5mclaunch.launcher.http.HttpClient;
 import org.j5mclaunch.launcher.http.JavaHttpClient;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import javax.net.ssl.SSLContext;
 import javax.swing.*;
@@ -170,4 +171,13 @@ public class Helper {
         }
         return arr;
     }
+    public static String pathOfJar() {
+        try {
+            return new File(Helper.class.getProtectionDomain().getCodeSource().getLocation()
+                    .toURI()).getPath();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+    public static JSONObject urls = new JSONObject(Helper.readFromClasspath("/downloadUrls.json"));
 }

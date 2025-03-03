@@ -21,13 +21,13 @@ import static org.j5mclaunch.launcher.Main.*;
 import static org.j5mclaunch.launcher.util.Helper.*;
 
 public class MinecraftLauncher {
-    public JSONObject urls = new JSONObject(Helper.readFromClasspath("/downloadUrls.json"));
+    public JSONObject urls = Helper.urls;
     // misc URLs
-    public final String librariesBase = urls.getString("nativesUrl");
+    public final String librariesBase = urls.getString("lwjglUrl");
 
     //  client stuff
     private final Map<String,String> clientUrls = new LinkedHashMap<String, String>();
-    private String[] libraries = Helper.jsonArrayToStringArray(urls.getJSONArray("libraries"));
+    private String[] libraries = Helper.jsonArrayToStringArray(urls.getJSONArray("lwjgl"));
 
     private final Map<String,String> natives = new HashMap<String, String>();
 
@@ -37,6 +37,12 @@ public class MinecraftLauncher {
     public String plrUuid = "";
     public String userName = "";
     public MinecraftLauncher() {
+        if (Helper.getJavaVer() > 5) {
+            for (Iterator<String> it = urls.getJSONObject("j6clients").keys(); it.hasNext(); ) {
+                String key = it.next();
+                clientUrls.put(key,urls.getJSONObject("j6clients").getString(key));
+            }
+        }
         for (Iterator<String> it = urls.getJSONObject("clients").keys(); it.hasNext(); ) {
             String key = it.next();
             clientUrls.put(key,urls.getJSONObject("clients").getString(key));
@@ -223,6 +229,19 @@ public class MinecraftLauncher {
                 printf(s+" already downloaded, skipping");
             }
         }
+        if (Helper.getJavaVer() > 5) {
+            for (Iterator<String> it = urls.getJSONObject("j6libraries").keys(); it.hasNext(); ) {
+                String key = it.next();
+                String url = urls.getJSONObject("j6libraries").getString(key);
+                File a = new File(mcHome+"/libraries/"+key);
+                if (!a.exists()) {
+                    printf("Downloading library " + key);
+                    http.download(url, mcHome + "/libraries/" + key);
+                } else {
+                    printf(key+" already downloaded, skipping");
+                }
+            }
+        }
         File n = new File(mcHome+"/bin/natives");
         if (!n.exists()) {
             printf("Natives not found!");
@@ -267,7 +286,12 @@ public class MinecraftLauncher {
         LauncherProfile.saveProfile();
         String mcHome = getMinecraftFolder();
         ArrayList<String> args = new ArrayList<String>();
-        args.add("java");
+        File tmp = new File("/System/Library/Frameworks/JavaVM.framework/Versions/current/Commands/java");
+        if (tmp.exists()) {
+            args.add(tmp.getAbsolutePath());
+        } else {
+            args.add("java");
+        }
         args.add("-Dsun.java2d.noddraw=true");
         args.add("-Dsun.java2d.d3d=false");
         args.add("-Dsun.java2d.opengl=false");
@@ -278,7 +302,7 @@ public class MinecraftLauncher {
             args.add("-Dcom.apple.awt.CocoaComponent.CompatibilityMode=false");
         }
         if (LauncherProfile.betacraftProxy) {
-            args.add("-Dhttp.proxyHost=betacraft.uk");
+            args.add("-Dhttp.proxyHost="+urls.getString("betacraft"));
             args.add("-Djava.util.Arrays.useLegacyMergeSort=true");
         }
         int ramToUse = (Helper.getRamAmount()/2);
@@ -291,16 +315,26 @@ public class MinecraftLauncher {
         args.add("-Xmx"+ramToUse+"M");
         if (getJavaVer() <= 11) {
             args.add("-XX:+UseConcMarkSweepGC");
+            args.add("-XX:+UseTLAB");
             args.add("-XX:+CMSIncrementalMode");
         }
         args.add("-XX:-UseAdaptiveSizePolicy");
         args.add("-Xmn84M");
         args.add("-Djava.library.path="+mcHome+"/bin/natives");
-        String classPathStr = mcHome+"/versions/"+v+".jar;"+mcHome+"/bin/lwjgl.jar;"+mcHome+"/bin/lwjgl_util.jar;"+mcHome+"/bin/jinput.jar;";
+        String classPathStr = pathOfJar()+";"+mcHome+"/versions/"+v+".jar;"+mcHome+"/bin/lwjgl.jar;"+mcHome+"/bin/lwjgl_util.jar;"+mcHome+"/bin/jinput.jar;";
+        if (getJavaVer() > 5) {
+            for (Iterator<String> it = urls.getJSONObject("j6libraries").keys(); it.hasNext(); ) {
+                String key = it.next();
+                classPathStr+=mcHome+"/libraries/"+key+";";
+            }
+        }
+        args.add("-Dorg.j5mclaunch.mcver="+v);
+        args.add("-Dorg.j5mclaunch.uuid="+plrUuid);
         args.add("-cp");
         if (isWindows()) args.add(classPathStr);
         else args.add(classPathStr.replace(";",":"));
-        args.add("net.minecraft.client.Minecraft");
+        //args.add("net.minecraft.client.Minecraft");
+        args.add("org.j5mclaunch.shim.Launch");
 
         args.add(userName);
         args.add(sessionId);
