@@ -108,13 +108,13 @@ public class Main {
         login.setVisible(false);
         login.setEnabled(false);
         frame.add(login);
-
-        vs = new JComboBox<String>(mclaunch.getClientVersions());
+        String[] clientVers = mclaunch.getClientVersions();
+        vs = new JComboBox<String>(clientVers);
         //vs.setBounds(5,45,100,25);
         vs.setBounds(195,15,100,25);
         vs.setVisible(true);
         vs.setSelectedIndex(3);
-        vs.setSelectedIndex(Arrays.asList(mclaunch.getClientVersions()).indexOf(LauncherProfile.selectedVersion));
+        vs.setSelectedIndex(Arrays.asList(clientVers).indexOf(LauncherProfile.selectedVersion));
         ver = LauncherProfile.selectedVersion;
         vs.addActionListener(
                 new ActionListener() {

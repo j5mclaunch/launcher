@@ -26,7 +26,7 @@ public class MinecraftLauncher {
     public final String librariesBase = urls.getString("lwjglUrl");
 
     //  client stuff
-    private final Map<String,String> clientUrls = new LinkedHashMap<String, String>();
+    private final Map<String,String> clientUrls = Helper.getVersions();
     private String[] libraries = Helper.jsonArrayToStringArray(urls.getJSONArray("lwjgl"));
 
     private final Map<String,String> natives = new HashMap<String, String>();
@@ -37,17 +37,6 @@ public class MinecraftLauncher {
     public String plrUuid = "";
     public String userName = "";
     public MinecraftLauncher() {
-        if (Helper.getJavaVer() > 5) {
-            for (Iterator<String> it = urls.getJSONObject("j6clients").keys(); it.hasNext(); ) {
-                String key = it.next();
-                clientUrls.put(key,urls.getJSONObject("j6clients").getString(key));
-            }
-        }
-        for (Iterator<String> it = urls.getJSONObject("clients").keys(); it.hasNext(); ) {
-            String key = it.next();
-            clientUrls.put(key,urls.getJSONObject("clients").getString(key));
-        }
-
         for (Iterator<String> it = urls.getJSONObject("natives").keys(); it.hasNext(); ) {
             String key = it.next();
             natives.put(key,urls.getJSONObject("natives").getString(key));
@@ -190,14 +179,14 @@ public class MinecraftLauncher {
     private String[] versions;
     public String[] getClientVersions() {
         if (versions == null) {
-            versions = new String[clientUrls.keySet().size()];
+            versions = new String[clientUrls.size()];
             for (int i=0; i < versions.length; i++) {
                 versions[i] = (String) clientUrls.keySet().toArray()[i];
             }
         }
         return versions;
     }
-    public String getMinecraftFolder() {
+    public static String getMinecraftFolder() {
         String OS = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
         if ((OS.contains("mac")) || (OS.contains("darwin"))) {
             return System.getProperty("user.home")+"/Library/Application Support/minecraft";

@@ -10,9 +10,9 @@ import javax.net.ssl.SSLContext;
 import javax.swing.*;
 import java.io.*;
 import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Scanner;
 import java.util.zip.*;
@@ -96,10 +96,16 @@ public class Helper {
             try {
                 File f = new File("/usr/local/opt/curl/bin/curl");
                 File f1 = new File("/opt/local/bin/curl");
+                File f2 = new File(MinecraftLauncher.getMinecraftFolder()+"/curl");
+                File f3 = new File(MinecraftLauncher.getMinecraftFolder()+"/curl.exe");
                 if (f.exists()) {
                     http = new CurlHttpClient("/usr/local/opt/curl/bin/curl");
                 } else if (f1.exists()) {
                     http = new CurlHttpClient("/opt/local/bin/curl");
+                } else if (f2.exists()) {
+                    http = new CurlHttpClient(MinecraftLauncher.getMinecraftFolder()+"/curl");
+                } else if (f3.exists()) {
+                    http = new CurlHttpClient(MinecraftLauncher.getMinecraftFolder()+"/curl.exe");
                 } else {
                     Runtime rt = Runtime.getRuntime();
                     Process proc = rt.exec("curl -V");
@@ -121,7 +127,7 @@ public class Helper {
                                 System.exit(1);
                             }
                         }else if (s.contains("(Windows)") || s.contains("WinIDN")) {
-                            popup("Microsoft's distribution of cURL does not work with this software. Falling back onto Java http...");
+                            popup("Micro soft's distribution of cURL does not work with this software. Falling back onto Java http...");
                             http = new JavaHttpClient();
                         } else {
                             http = new CurlHttpClient();
@@ -180,4 +186,14 @@ public class Helper {
         }
     }
     public static JSONObject urls = new JSONObject(Helper.readFromClasspath("/downloadUrls.json"));
+    public static LinkedHashMap<String,String> getVersions() {
+        LinkedHashMap<String,String> result = new LinkedHashMap<String, String>();
+        String raw = Helper.readFromClasspath("/clients.cfg");
+        String[] split = raw.replace("\r","").replace("\n","").split(";");
+        for (int i=0; i < split.length; i++) {
+            String[] tmp = split[i].split(":",2);
+            result.put(tmp[0],tmp[1]);
+        }
+        return result;
+    }
 }
