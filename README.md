@@ -27,3 +27,5 @@ It "works" I guess, I got 1.2.5 to run a singleplayer world at 2 frames per seco
 You can intall it here: https://forums.macrumors.com/threads/how-to-install-java-6-and-7-on-ppc-os-x.2190159/ but I suggest only doing it if you need a modification that \*requires\* Java 6 (I haven't tested Forge, all I know is that those older versions need help download libraries or they crash)
 
 Be aware that on Tiger it doesn't set Java in path successfully, but this launcher will use the symlinks the Java Updater makes so you can use the scripts to change version on MC
+
+### DO NOT USE JAVA 7, USERS IN THE THREAD REPORT THAT IT DOES NOT LIKE MINECRAFT AND I HAD IT COMPLETELY BORK ALL JAVA GUI APPS IN THE PAST
