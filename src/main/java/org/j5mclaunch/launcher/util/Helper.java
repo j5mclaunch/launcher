@@ -47,6 +47,7 @@ public class Helper {
                         while ((length = zis.read(buffer)) > 0) {
                             fos.write(buffer, 0, length);
                         }
+                        fos.close();
                     } catch (Exception ex){
                         ex.printStackTrace();
                         error(ex.getMessage());
@@ -71,7 +72,7 @@ public class Helper {
     }
     public static double getOSXVer() {
         String ver = System.getProperty("os.version");
-        String[] ver1 = ver.split(".");
+        String[] ver1 = ver.split("\\.");
         return Double.parseDouble(ver1[0]+"."+ver1[1]);
     }
     public static boolean isOSX() {
@@ -195,5 +196,11 @@ public class Helper {
             result.put(tmp[0],tmp[1]);
         }
         return result;
+    }
+    public static void removeMetaInf(String absPath) {
+        File tmp = new File(absPath,"META-INF");
+        if (tmp.exists()) {
+            tmp.delete();
+        }
     }
 }

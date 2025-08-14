@@ -5,10 +5,7 @@ import org.j5mclaunch.launcher.Main;
 import org.j5mclaunch.launcher.http.HttpClient;
 import org.json.JSONObject;
 
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JButton;
-import javax.swing.JTextField;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,25 +19,35 @@ import static org.j5mclaunch.launcher.util.Helper.*;
 
 public class MinecraftLauncher {
     public JSONObject urls = Helper.urls;
+
+    public static String tmp = System.getProperty("java.io.tmpdir");
+    public static String OS = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
+    public static String arch = System.getProperty("os.arch");
+    public static boolean isPowerPC = arch.equals("ppc") || arch.equals("powerpc");
+
     // misc URLs
-    public final String librariesBase = urls.getString("lwjglUrl");
+    public final String librariesBase = urls.getString("lwjgl273Url");
 
     //  client stuff
     private final Map<String,String> clientUrls = Helper.getVersions();
-    private String[] libraries = Helper.jsonArrayToStringArray(urls.getJSONArray("lwjgl"));
+    private String[] libraries = Helper.jsonArrayToStringArray(urls.getJSONArray("lwjgl273"));
 
     private final Map<String,String> natives = new HashMap<String, String>();
 
     private static HttpClient http = Helper.getHttpClient();
 
+    private boolean USE_LEGACY_LWJGL;
+
     private String sessionId = "";
     public String plrUuid = "";
     public String userName = "";
     public MinecraftLauncher() {
-        for (Iterator<String> it = urls.getJSONObject("natives").keys(); it.hasNext(); ) {
+        for (Iterator<String> it = urls.getJSONObject("natives273").keys(); it.hasNext(); ) {
             String key = it.next();
-            natives.put(key,urls.getJSONObject("natives").getString(key));
+            natives.put(key,urls.getJSONObject("natives273").getString(key));
         }
+
+        USE_LEGACY_LWJGL = (isOSX() && getOSXVer() < 10.6 || isOSX() && isPowerPC) || (isWindows() && getOSXVer() < 6.0);
     }
     public void downloadAssets() {
         String assetBase = getMinecraftFolder()+"/resources/";
@@ -196,28 +203,25 @@ public class MinecraftLauncher {
             return System.getProperty("user.home")+"/.minecraft";
         }
     }
-    public void downloadVersion(String s) {
+    public boolean downloadVersion(String s) {
         String mcHome = getMinecraftFolder();
         File a = new File(mcHome+"/versions/"+s+".jar");
         if (!a.exists()) {
-            printf("Downloading version " + s);
-            http.download(clientUrls.get(s),mcHome+"/versions/"+s+".jar");
+            if (s.equals("custom")) {
+                error("No custom.jar file present!");
+                return false;
+            } else {
+                printf("Downloading version " + s);
+                http.download(clientUrls.get(s), mcHome + "/versions/" + s + ".jar");
+            }
         } else {
             printf("Version "+s+" already downloaded, skipping");
         }
+        return true;
     }
     public void downloadLibraries() {
         String mcHome = getMinecraftFolder();
         printf("Downloading libraries");
-        for (String s: libraries) {
-            File a = new File(mcHome+"/bin/"+s);
-            if (!a.exists()) {
-                printf("Downloading library " + s);
-                http.download(librariesBase + s, mcHome + "/bin/" + s);
-            } else {
-                printf(s+" already downloaded, skipping");
-            }
-        }
         if (Helper.getJavaVer() > 5) {
             for (Iterator<String> it = urls.getJSONObject("j6libraries").keys(); it.hasNext(); ) {
                 String key = it.next();
@@ -231,32 +235,82 @@ public class MinecraftLauncher {
                 }
             }
         }
-        File n = new File(mcHome+"/bin/natives");
-        if (!n.exists()) {
-            printf("Natives not found!");
-            try{
-                String sys = "";
-                String tmp = System.getProperty("java.io.tmpdir");
-                String OS = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
-                if ((OS.contains("mac")) || (OS.contains("darwin"))) {
-                    sys = "macosx";
-                } else if (OS.contains("win")) {
-                    sys = "windows";
-                } else if (OS.contains("nix")) {
-                    sys = "linux";
+        if (USE_LEGACY_LWJGL) {
+            for (String s: libraries) {
+                File a = new File(mcHome+"/bin/"+s);
+                if (!a.exists()) {
+                    printf("Downloading library " + s);
+                    http.download(librariesBase + s, mcHome + "/bin/" + s);
                 } else {
-                    sys = "solaris";
+                    printf(s+" already downloaded, skipping");
                 }
-                printf("Downloading natives");
-                http.download(librariesBase+natives.get(sys),tmp+"/mc_natives.zip");
-                printf("Extracting natives");
-                n.mkdirs();
-                Helper.unzip(tmp+"/mc_natives.zip",n.getAbsolutePath());
-            }catch(Exception ex){
-                System.out.println(ex);
-                error(ex.getMessage());
+            }
+            File n = new File(mcHome+"/bin/natives");
+            if (!n.exists()) {
+                printf("Natives not found!");
+                try{
+                    String sys;
+                    if (OS.contains("win")) {
+                        sys = "windows";
+                    } else {
+                        sys = "macosx";
+                    }
+                    printf("Downloading natives");
+                    http.download(librariesBase+natives.get(sys),tmp+"/mc_natives.zip");
+                    printf("Extracting natives");
+                    n.mkdirs();
+                    Helper.unzip(tmp+"/mc_natives.zip",n.getAbsolutePath());
+                }catch(Exception ex){
+                    System.out.println(ex);
+                    error(ex.getMessage());
+                }
+            }
+        } else {
+            for (Iterator<String> it = urls.getJSONObject("lwjgl293").keys(); it.hasNext(); ) {
+                String key = it.next();
+                String url = urls.getJSONObject("lwjgl293").getString(key);
+                File a = new File(mcHome+"/bin/"+key);
+                if (!a.exists()) {
+                    printf("Downloading library " + key);
+                    http.download(url, mcHome + "/bin/" + key);
+                } else {
+                    printf(key+" already downloaded, skipping");
+                }
+            }
+            File n = new File(mcHome+"/bin/natives");
+            if (!n.exists()) {
+                printf("Natives not found!");
+                try{
+                    String sys;
+                    if (isPowerPC) {
+                        sys = "linux-ppc";
+                    } else if ((OS.contains("mac")) || (OS.contains("darwin"))) {
+                        sys = "macosx";
+                    } else if (OS.contains("win")) {
+                        sys = "windows";
+                    } else {
+                        sys = "linux";
+                    }
+                    printf("Downloading natives");
+                    http.download(urls.getJSONObject("natives293").getString(sys),tmp+"/mc_natives.zip");
+                    if (urls.getJSONObject("jinput293").has(sys)) {
+                        http.download(urls.getJSONObject("jinput293").getString(sys),tmp+"/jinput_natives.zip");
+                    }
+                    printf("Extracting natives");
+                    n.mkdirs();
+                    Helper.unzip(tmp+"/mc_natives.zip",n.getAbsolutePath());
+                    Helper.removeMetaInf(n.getAbsolutePath());
+                    if (urls.getJSONObject("jinput293").has(sys)) {
+                        Helper.unzip(tmp+"/jinput_natives.zip",n.getAbsolutePath());
+                        Helper.removeMetaInf(n.getAbsolutePath());
+                    }
+                }catch(Exception ex){
+                    System.out.println(ex);
+                    error(ex.getMessage());
+                }
             }
         }
+
         printf("Done!");
     }
     public void setupMinecraftFolder() {
@@ -274,6 +328,13 @@ public class MinecraftLauncher {
         }
         LauncherProfile.saveProfile();
         String mcHome = getMinecraftFolder();
+        File tmpFile = new File(mcHome+"/versions/"+v+"-modded.jar");
+        if (tmpFile.exists()) {
+            int selectedOption = JOptionPane.showConfirmDialog(null,"A modded client for this version is present. Do you want to launch the modded version?","Modded version available",JOptionPane.YES_NO_OPTION,JOptionPane.QUESTION_MESSAGE);
+            if (selectedOption == 0) {
+                v += "-modded";
+            }
+        }
         ArrayList<String> args = new ArrayList<String>();
         File tmp = new File("/System/Library/Frameworks/JavaVM.framework/Versions/current/Commands/java");
         if (tmp.exists()) {

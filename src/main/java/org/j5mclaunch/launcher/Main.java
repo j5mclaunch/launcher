@@ -87,10 +87,11 @@ public class Main {
         launch.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        mclaunch.downloadVersion(ver);
-                        mclaunch.downloadLibraries();
-                        mclaunch.downloadAssets();
-                        mclaunch.launchGame(ver);
+                        if (mclaunch.downloadVersion(ver)) {
+                            mclaunch.downloadLibraries();
+                            mclaunch.downloadAssets();
+                            mclaunch.launchGame(ver);
+                        }
                     }
                 });
         frame.add(launch);

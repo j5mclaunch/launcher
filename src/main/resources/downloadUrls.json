@@ -2,17 +2,31 @@
   "betacraft": "betacraft.uk",
   "assetUrl": "https://launchermeta.mojang.com/v1/packages/770572e819335b6c0a053f8378ad88eda189fc14/legacy.json",
   "assetBase": "https://resources.download.minecraft.net/",
-  "lwjglUrl": "https://raw.githubusercontent.com/j5mclaunch/lwjgl/refs/heads/main/",
-  "natives": {
+  "lwjgl273Url": "https://raw.githubusercontent.com/j5mclaunch/lwjgl/refs/heads/main/",
+  "natives273": {
     "windows": "natives/windows_natives.zip",
-    "linux": "natives/linux_natives.zip",
-    "macosx": "natives/macosx_natives.zip",
-    "solaris": "natives/solaris_natives.zip"
+    "macosx": "natives/macosx_natives.zip"
   },
-  "lwjgl": [
+  "lwjgl273": [
     "jinput.jar",
     "lwjgl.jar",
     "lwjgl_util.jar"
   ],
+  "natives293": {
+    "windows": "https://libraries.minecraft.net/org/lwjgl/lwjgl/lwjgl-platform/2.9.3/lwjgl-platform-2.9.3-natives-windows.jar",
+    "linux": "https://libraries.minecraft.net/org/lwjgl/lwjgl/lwjgl-platform/2.9.3/lwjgl-platform-2.9.3-natives-linux.jar",
+    "linux-ppc": "https://raw.githubusercontent.com/j5mclaunch/lwjgl/refs/heads/main/lwjgl-platform-2.9.3-natives-linux-ppc.jar",
+    "macosx": "https://libraries.minecraft.net/org/lwjgl/lwjgl/lwjgl-platform/2.9.3/lwjgl-platform-2.9.3-natives-osx.jar"
+  },
+  "jinput293": {
+    "windows": "https://libraries.minecraft.net/net/java/jinput/jinput-platform/2.0.5/jinput-platform-2.0.5-natives-windows.jar",
+    "linux": "https://libraries.minecraft.net/net/java/jinput/jinput-platform/2.0.5/jinput-platform-2.0.5-natives-linux.jar",
+    "macosx": "https://libraries.minecraft.net/net/java/jinput/jinput-platform/2.0.5/jinput-platform-2.0.5-natives-osx.jar"
+  },
+  "lwjgl293": {
+    "jinput.jar": "https://libraries.minecraft.net/net/java/jinput/jinput/2.0.5/jinput-2.0.5.jar",
+    "lwjgl.jar": "https://libraries.minecraft.net/org/lwjgl/lwjgl/lwjgl/2.9.3/lwjgl-2.9.3.jar",
+    "lwjgl_util.jar": "https://libraries.minecraft.net/org/lwjgl/lwjgl/lwjgl_util/2.9.3/lwjgl_util-2.9.3.jar"
+  },
   "j6libraries": {}
 }

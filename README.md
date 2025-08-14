@@ -19,6 +19,9 @@ Fallback doesn't work with old versions of Java so its important new cURL is pre
 
 This does NOT install modifications like OptiFine by default. It is only the launcher. You need to go to the versions folder and mod your own jars.
 
+## Building
+
+You need to download 1.5.2 and 1.6.4 jars and place them into the `libraries` folder in the root of the project due to the shim requiring them. The rest of the launcher needs to be built using OpenJDK 8 due to newer versions removing the Java 5 target. Building has only been tested in IntelliJ Idea Community 2024 and 2025.
 
 ## About Java 6
 

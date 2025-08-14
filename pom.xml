@@ -6,7 +6,7 @@
 
     <groupId>org.j5mclaunch</groupId>
     <artifactId>j5mclaunch</artifactId>
-    <version>2.2</version>
+    <version>3.0</version>
 
     <properties>
         <maven.compiler.source>5</maven.compiler.source>
