@@ -47,7 +47,7 @@ public class MinecraftLauncher {
             natives.put(key,urls.getJSONObject("natives273").getString(key));
         }
 
-        USE_LEGACY_LWJGL = (isOSX() && getOSXVer() < 10.6 || isOSX() && isPowerPC) || (isWindows() && getOSXVer() < 6.0);
+        USE_LEGACY_LWJGL = (isOSX() && getOSXVer() < 10.6) || (isOSX() && isPowerPC) || (isWindows() && getOSXVer() < 6.0);
     }
     public void downloadAssets() {
         String assetBase = getMinecraftFolder()+"/resources/";
