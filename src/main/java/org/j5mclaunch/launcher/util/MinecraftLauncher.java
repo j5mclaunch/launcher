@@ -131,8 +131,8 @@ public class MinecraftLauncher {
         final JFrame f = new JFrame();
         f.setLayout(null);
         f.setLocationRelativeTo(null);
-        f.setSize(650,75);
-        f.getContentPane().setPreferredSize(new Dimension(650, 100));
+        f.setSize(650,125);
+        f.getContentPane().setPreferredSize(new Dimension(650, 125));
         f.pack();
         f.setResizable(false);
         JLabel l = new JLabel("Go to the following URL and sign in. Copy the URL of the blank page afterwards and paste it into the other box");
