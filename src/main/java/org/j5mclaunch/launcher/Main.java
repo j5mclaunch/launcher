@@ -4,15 +4,16 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.security.Security;
 import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 import javax.swing.plaf.FontUIResource;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.j5mclaunch.launcher.util.Helper;
 import org.j5mclaunch.launcher.util.LauncherProfile;
 import org.j5mclaunch.launcher.util.MinecraftLauncher;
-import org.json.JSONObject;
 
 public class Main {
 
@@ -25,6 +26,7 @@ public class Main {
     public static MinecraftLauncher mclaunch;
     private static String ver = "1.2.5";
     public static void main(String[] args) {
+        Helper.fixHttpSecurity();
         if (Helper.isOSX()) {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
             System.setProperty("apple.awt.application.name", "j5mclaunch");

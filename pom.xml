@@ -16,6 +16,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15to18</artifactId>
+            <version>1.86</version>
+        </dependency>
+        <dependency>
             <groupId>net.minecraft</groupId>
             <artifactId>minecraft-1.5</artifactId>
             <version>1.5.2</version>

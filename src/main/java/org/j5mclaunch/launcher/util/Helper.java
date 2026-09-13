@@ -1,5 +1,6 @@
 package org.j5mclaunch.launcher.util;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.j5mclaunch.launcher.http.CurlHttpClient;
 import org.j5mclaunch.launcher.http.HttpClient;
 import org.j5mclaunch.launcher.http.JavaHttpClient;
@@ -12,6 +13,7 @@ import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.Security;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Scanner;
@@ -94,6 +96,12 @@ public class Helper {
     private static HttpClient http;
     public static HttpClient getHttpClient() {
         if (http == null) {
+            http = new JavaHttpClient();
+        }
+        return http;
+    }
+    public static HttpClient getHttpClientOld() {
+        if (http == null) {
             try {
                 File f = new File("/usr/local/opt/curl/bin/curl");
                 File f1 = new File("/opt/local/bin/curl");
@@ -148,6 +156,9 @@ public class Helper {
             }
         }
         return http;
+    }
+    public static void fixHttpSecurity() {
+        Security.addProvider(new BouncyCastleProvider());
     }
     public static int getRamAmount() { //https://coderanch.com/t/327792/java/RAM-size-Java
         long memorySize = ((com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean()).getTotalPhysicalMemorySize();

@@ -1,10 +1,14 @@
 package org.j5mclaunch.shim;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.main.Main;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.j5mclaunch.launcher.util.Helper;
+
+import java.security.Security;
 
 public class Launch {
     public static void main(String[] args) {
+        Helper.fixHttpSecurity();
         Runtime run = Runtime.getRuntime();
         String ver = System.getProperty("org.j5mclaunch.mcver");
         String uuid = System.getProperty("org.j5mclaunch.uuid");
