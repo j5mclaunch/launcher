@@ -3,6 +3,8 @@
 
 j5mclaunch was made so I could launch older versions of the game on a Java 5 system (like a PowerPC mac)
 
+### Because 4.0 changed to use BouncyCastle instead of cURL, MacPorts is not required to run the game. However, starting the launcher is now way slower (~2 minutes on my 1.33ghz iBook) because of it.
+
 ## Usage
 1. Transfer the JAR onto a USB thumbdrive
 2. On your PowerPC mac or Windows 2000 desktop open j5mclaunch
