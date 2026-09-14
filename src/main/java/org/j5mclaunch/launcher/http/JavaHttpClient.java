@@ -2,20 +2,23 @@ package org.j5mclaunch.launcher.http;
 
 import org.j5mclaunch.launcher.util.Helper;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.security.KeyStore;
 
 import static org.j5mclaunch.launcher.util.Helper.error;
 
 public class JavaHttpClient extends HttpClient {
     public JavaHttpClient() {
         if (!Helper.javaClientSupported()) {
-            error("Unable to fallback to Java HTTP client!");
-            System.exit(1);
+            System.out.println("WARN: TLS1.3 not supported, this will cause issues if mods need internet connection.");
         }
     }
 
@@ -27,7 +30,8 @@ public class JavaHttpClient extends HttpClient {
         //https://stackoverflow.com/a/5868033
         try {
             URL url = new URL(url1);
-            URLConnection con = url.openConnection();
+            HttpsURLConnection con = (HttpsURLConnection)url.openConnection();
+            Helper.fixSecurity(con);
             con.setRequestProperty("Authorization","Bearer "+auth);
             InputStream in = con.getInputStream();
             String encoding = con.getContentEncoding();  // ** WRONG: should use "con.getContentType()" instead but it returns something like "text/html; charset=UTF-8" so this value must be parsed to extract the actual encoding
@@ -52,17 +56,23 @@ public class JavaHttpClient extends HttpClient {
         //https://stackoverflow.com/a/921400
         try {
             URL website = new URL(url);
-            ReadableByteChannel rbc = Channels.newChannel(website.openStream());
+            HttpsURLConnection con = (HttpsURLConnection) website.openConnection();
+            Helper.fixSecurity(con);
+            InputStream rbc = con.getInputStream();
             File tmp = new File(dest.replaceAll("[^\\\\/]+[\\\\/]?$",""));
             try {
                 tmp.mkdirs();
             }catch (Exception ignored){}
             FileOutputStream fos = new FileOutputStream(dest);
-            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+            int a = rbc.read();
+            while (a != -1) {
+                fos.write(a);
+                a = rbc.read();
+            }
             fos.close();
             rbc.close();
         } catch(Exception ex) {
-            System.out.println(ex);
+            ex.printStackTrace();
             throw new RuntimeException(ex);
         }
     }
@@ -71,7 +81,8 @@ public class JavaHttpClient extends HttpClient {
         try {
             URL url = new URL(url1);
             URLConnection con = url.openConnection();
-            HttpURLConnection http = (HttpURLConnection)con;
+            HttpsURLConnection http = (HttpsURLConnection)con;
+            Helper.fixSecurity(http);
             try {
                 http.setRequestMethod("POST"); // PUT is another valid option
                 http.setDoOutput(true);

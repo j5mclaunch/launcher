@@ -1,25 +1,31 @@
 package org.j5mclaunch.launcher.util;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jsse.provider.BouncyCastleJsseProvider;
 import org.j5mclaunch.launcher.http.CurlHttpClient;
+import org.j5mclaunch.launcher.http.HackyHostnameVerifier;
 import org.j5mclaunch.launcher.http.HttpClient;
 import org.j5mclaunch.launcher.http.JavaHttpClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 import javax.swing.*;
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.KeyStore;
 import java.security.Security;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Scanner;
 import java.util.zip.*;
 
-import static org.j5mclaunch.launcher.Main.setStatus;
+import static org.j5mclaunch.launcher.Launcher.setStatus;
 
 public class Helper {
     public static void makeDir(String dir) {
@@ -64,13 +70,17 @@ public class Helper {
     public static double getJavaVer() {
         return Double.parseDouble(System.getProperty("java.specification.version"));
     }
+    private static boolean fixed = false;
     public static boolean javaClientSupported() {
-        try {
-            SSLContext supported = SSLContext.getInstance("TLSv1.3");
-            return supported != null;
-        } catch(Exception e) {
-            return false;
+        if (!fixed) {
+            try {
+                SSLContext s = SSLContext.getInstance("TLSv1.3");
+                return s != null;
+            } catch(Exception e) {
+                return false;
+            }
         }
+        return false;
     }
     public static double getOSXVer() {
         String ver = System.getProperty("os.version");
@@ -94,6 +104,7 @@ public class Helper {
                 JOptionPane.ERROR_MESSAGE);
     }
     private static HttpClient http;
+
     public static HttpClient getHttpClient() {
         if (http == null) {
             http = new JavaHttpClient();
@@ -128,38 +139,65 @@ public class Helper {
                     if (s.contains("libcurl")) {
                         String OS = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
                         if ((OS.contains("mac")) || (OS.contains("darwin")) && getOSXVer() < 10.15) {
-                            if (getOSXVer() > 10.8) {
-                                popup("cURL on OS X is as old as the version is. Your version of OS X is too old for TLSv1.3 to be in the bundled cURL. Falling back onto Java http...");
-                                http = new JavaHttpClient();
-                            } else {
-                                error("cURL on OS X is as old as the version is. You need to install a new version with port or brew to play the game.");
-                                System.exit(1);
+                            if (!Helper.javaClientSupported()) {
+                                popup("Java authentication will break in the future once TLS1.2 is deprecated. Please install cURL with homebrew if possible");
                             }
+                            http = new JavaHttpClient();
                         }else if (s.contains("(Windows)") || s.contains("WinIDN")) {
-                            popup("Micro soft's distribution of cURL does not work with this software. Falling back onto Java http...");
+                            if (!Helper.javaClientSupported()) {
+                                popup("Java authentication will break in the future once TLS1.2 is deprecated. Please install a newer Java if possible");
+                            }
                             http = new JavaHttpClient();
                         } else {
                             http = new CurlHttpClient();
                         }
                     } else {
-                        if (getJavaVer() < 11) {
-                            popup("cURL was not found on your system! This is needed for TLS v1.3 on old systems.");
+                        if (!Helper.javaClientSupported()) {
+                            popup("Java authentication will break in the future once TLS1.2 is deprecated. Please install modern cURL if possible");
                         }
                         http = new JavaHttpClient();
                     }
                 }
             } catch (Exception e) {
-                if (getJavaVer() < 11) {
-                    popup("cURL was not found on your system! This is needed for TLS v1.3 on old systems.");
+                if (!Helper.javaClientSupported()) {
+                    popup("Java authentication will break in the future once TLS1.2 is deprecated. Please install modern cURL if possible");
                 }
                 http = new JavaHttpClient();
             }
         }
         return http;
     }
-    public static void fixHttpSecurity() {
-        Security.addProvider(new BouncyCastleProvider());
-    }
+        private static SSLContext sslcon;
+        private static TrustManagerFactory tmf;
+        private static HostnameVerifier h = new HackyHostnameVerifier();
+        public static void fixSecurity(HttpsURLConnection con) {
+            if (!Helper.javaClientSupported()) {
+                con.setSSLSocketFactory(sslcon.getSocketFactory());
+                con.setHostnameVerifier(h);
+            }
+        }
+        public static void fixHttpSecurity() {
+            fixed = true;
+            System.setProperty("org.bouncycastle.jsse.client.assumeOriginalHostName","true");
+            System.setProperty("org.bouncycastle.jsse.client.acceptRenegotiation","true");
+            System.setProperty("sun.security.ssl.allowLegacyHelloMessages","true");
+            System.setProperty("sun.security.ssl.allowUnsafeRenegotiation","true");
+            Security.insertProviderAt(new BouncyCastleProvider(),1);
+            Security.insertProviderAt(new BouncyCastleJsseProvider(),2);
+            try {
+                KeyStore k = KeyStore.getInstance("bks","BC");
+                k.load(Helper.class.getResourceAsStream("/cacert.bks"),("123456").toCharArray());
+                TrustManagerFactory t = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                t.init(k);
+                tmf = t;
+                SSLContext s = SSLContext.getInstance("TLSv1.2");
+                s.init(null,t.getTrustManagers(),null);
+                sslcon = s;
+
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
     public static int getRamAmount() { //https://coderanch.com/t/327792/java/RAM-size-Java
         long memorySize = ((com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean()).getTotalPhysicalMemorySize();
         return Math.round((float) memorySize / (1024 * 1024));

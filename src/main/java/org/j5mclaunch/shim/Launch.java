@@ -8,7 +8,9 @@ import java.security.Security;
 
 public class Launch {
     public static void main(String[] args) {
-        Helper.fixHttpSecurity();
+        if (!Helper.javaClientSupported()) {
+            Helper.fixHttpSecurity();
+        }
         Runtime run = Runtime.getRuntime();
         String ver = System.getProperty("org.j5mclaunch.mcver");
         String uuid = System.getProperty("org.j5mclaunch.uuid");

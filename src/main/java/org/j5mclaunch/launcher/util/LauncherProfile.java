@@ -1,6 +1,6 @@
 package org.j5mclaunch.launcher.util;
 
-import org.j5mclaunch.launcher.Main;
+import org.j5mclaunch.launcher.Launcher;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -8,7 +8,7 @@ import java.io.FileWriter;
 import java.util.Scanner;
 
 public class LauncherProfile {
-    private static final String mcHome = Main.mclaunch.getMinecraftFolder();
+    private static final String mcHome = Launcher.mclaunch.getMinecraftFolder();
 
     public static boolean betacraftProxy = false;
     public static String selectedVersion = "1.2.5";

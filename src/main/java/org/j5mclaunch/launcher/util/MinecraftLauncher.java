@@ -1,7 +1,7 @@
 package org.j5mclaunch.launcher.util;
 
 import com.centerkey.utils.BareBonesBrowserLaunch;
-import org.j5mclaunch.launcher.Main;
+import org.j5mclaunch.launcher.Launcher;
 import org.j5mclaunch.launcher.http.HttpClient;
 import org.json.JSONObject;
 
@@ -14,7 +14,8 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.util.*;
 
-import static org.j5mclaunch.launcher.Main.*;
+import static org.j5mclaunch.launcher.Launcher.*;
+import static org.j5mclaunch.launcher.Main.LAUNCHER_LIBS;
 import static org.j5mclaunch.launcher.util.Helper.*;
 
 public class MinecraftLauncher {
@@ -92,7 +93,7 @@ public class MinecraftLauncher {
                         plrUuid = MinecraftAuth.uuid;
                         sessionId = MinecraftAuth.minecraft_token;
                         setStatus("Welcome "+userName);
-                        Main.setPlayEnabled();
+                        Launcher.setPlayEnabled();
                     } else if (MinecraftAuth.getAccessToken()){
                         MinecraftAuth.getXboxToken();
                         MinecraftAuth.getMinecraftToken();
@@ -167,7 +168,7 @@ public class MinecraftLauncher {
                             sessionId = MinecraftAuth.minecraft_token;
                             setStatus("Welcome "+userName);
                             MinecraftAuth.saveTokens(getMinecraftFolder()+"/j5mclaunch.json");
-                            Main.setPlayEnabled();
+                            Launcher.setPlayEnabled();
                         } else {
                             login.setVisible(true);
                             login.setEnabled(true);
@@ -379,7 +380,7 @@ public class MinecraftLauncher {
         args.add("-XX:-UseAdaptiveSizePolicy");
         args.add("-Xmn84M");
         args.add("-Djava.library.path="+mcHome+"/bin/natives");
-        String classPathStr = pathOfJar()+";"+mcHome+"/versions/"+v+".jar;"+mcHome+"/bin/lwjgl.jar;"+mcHome+"/bin/lwjgl_util.jar;"+mcHome+"/bin/jinput.jar;";
+        String classPathStr = pathOfJar()+";"+mcHome+"/versions/"+v+".jar;"+mcHome+"/bin/lwjgl.jar;"+mcHome+"/bin/lwjgl_util.jar;"+mcHome+"/bin/jinput.jar;"+LAUNCHER_LIBS+"/bcprov-jdk15to18-1.86.jar;"+LAUNCHER_LIBS+"/bctls-jdk15to18-1.86.jar;"+LAUNCHER_LIBS+"/bcutil-jdk15to18-1.86.jar;";;
         if (getJavaVer() > 5) {
             for (Iterator<String> it = urls.getJSONObject("j6libraries").keys(); it.hasNext(); ) {
                 String key = it.next();
@@ -396,10 +397,10 @@ public class MinecraftLauncher {
         args.add(userName);
         args.add(sessionId);
        try {
-            Main.frame.setEnabled(false);
-            Main.frame.setFocusable(false);
-            Main.frame.removeAll();
-            Main.frame.dispose();
+            Launcher.frame.setEnabled(false);
+            Launcher.frame.setFocusable(false);
+            Launcher.frame.removeAll();
+            Launcher.frame.dispose();
             ProcessBuilder proc1 = new ProcessBuilder(args);
             Process proc = proc1.directory(new File(getMinecraftFolder())).redirectErrorStream(true).start();
             BufferedReader out = new BufferedReader(new
